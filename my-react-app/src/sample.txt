@@ -191,3 +191,74 @@ const CartModal = ({ open, onClose }) => {
 
                 {!showQuoteButton && (
                     <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 8 }}>
+                        <Table>
+                            <TableHead>
+                                <TableHeader>quoteId</TableHeader>
+                                <TableHeader>totalDueToday</TableHeader>
+                                <TableHeader>totalDueMonthly</TableHeader>
+                            </TableHead>
+                            <TableBody>
+                                <TableRow>
+                                    <Cell>item.location</Cell>
+                                    <Cell>item.orderNum</Cell>
+                                    <Cell>item.mtn</Cell>
+                                </TableRow>
+                            </TableBody>
+                        </Table>
+                    </Box>
+                )}
+            </Grid>
+        );
+    };
+
+    return (
+        <CustomizeRecommProvider>
+            <Modal open={open} onClose={resetState}>
+                <Box
+                    sx={{
+                        position: "absolute",
+                        top: "50%",
+                        left: "50%",
+                        transform: "translate(-50%, -50%)",
+                        width: "90%",
+                        maxWidth: "100%",
+                        maxHeight: "90vh",
+                        overflow: "auto",
+                        bgcolor: "background.paper",
+                        border: "2px solid #000",
+                        boxShadow: 24,
+                        p: 2,
+                    }}
+                >
+                    <Box
+                        sx={{
+                            display: "flex",
+                            justifyContent: "space-between",
+                            alignItems: "center",
+                        }}
+                    >
+                        <IconButton
+                            aria-label="close"
+                            onClick={resetState}
+                            sx={{ padding: "8px", marginLeft: "auto" }}
+                        >
+                            <Close />
+                        </IconButton>
+                    </Box>
+
+                    <Tabs
+                        orientation="horizontal"
+                        indicatorPosition="bottom"
+                        activeIndex={activeTab}
+                        onTabChange={(index) => setActiveTab(index)}
+                    >
+                        <Tab label="Quote">{renderTemplate(0)}</Tab>
+                        <Tab label="New Quote">{renderTemplate(1)}</Tab>
+                    </Tabs>
+                </Box>
+            </Modal>
+        </CustomizeRecommProvider>
+    );
+};
+
+export default CartModal;
