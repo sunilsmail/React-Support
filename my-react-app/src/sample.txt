@@ -1,0 +1,193 @@
+import React, { useEffect, useState, useRef, useCallback } from "react";
+import { Modal, Box, IconButton, Grid } from "@mui/material";
+import { Close } from "@mui/icons-material";
+import { Tabs, Tab } from "@vds/tabs";
+import { Button } from "@vds/buttons";
+import {
+    Table,
+    TableHead,
+    TableHeader,
+    TableBody,
+    TableRow,
+    Cell,
+} from "@vzrf/react-table";
+
+import LinesContainer from "./LinesContainer";
+import Devices from "./Devices";
+import SummaryContainer from "./SummaryContainer";
+import JobDetailsPane from "./JobDetailsPane";
+import { CustomizeRecommProvider } from "../Context/CustomizeRecommContext";
+import { getAllDevices } from "../../../api/browse";
+
+const CartModal = ({ open, onClose }) => {
+    const [activeTab, setActiveTab] = useState(0);
+
+    const defaultState = {
+        devicesList: [],
+        devicesListLoading: false,
+        errorText: null,
+        selectedDeviceDetails: [],
+        isCartSubmitted: false,
+        showQuoteButton: true,
+    };
+
+    const [tabStates, setTabStates] = useState([
+        { ...defaultState },
+        { ...defaultState },
+    ]);
+
+    const jobDetailsRefs = [useRef(), useRef()];
+
+    const updateTabState = (index, newStateOrUpdater) => {
+        setTabStates((prev) => {
+            const updated = [...prev];
+            const current = updated[index];
+
+            updated[index] =
+                typeof newStateOrUpdater === "function"
+                    ? { ...current, ...newStateOrUpdater(current) }
+                    : { ...current, ...newStateOrUpdater };
+
+            return updated;
+        });
+    };
+
+    const fetchDevices = useCallback(async (index) => {
+        updateTabState(index, { devicesListLoading: true, errorText: null });
+
+        try {
+            const request = {
+                Category: "SMARTPHONE",
+                Brands: [],
+                Start: 1,
+                End: 25,
+                Mtns: ["5187641482"],
+                GuidedPromoFlowEnabled: true,
+                VzId: "VANGUPA",
+            };
+
+            const result = await getAllDevices(request);
+            const devices = result?.data?.Categories?.[0]?.Products || [];
+
+            updateTabState(index, {
+                devicesList: devices,
+                devicesListLoading: false,
+                errorText: devices.length === 0 ? "No devices available." : null,
+            });
+        } catch (err) {
+            console.error("Failed to fetch devices:", err);
+            updateTabState(index, {
+                devicesListLoading: false,
+                errorText: "Failed to fetch devices.",
+            });
+        }
+    }, []);
+
+    useEffect(() => {
+        const state = tabStates?.[activeTab];
+        if (
+            !state?.devicesList?.length &&
+            !state?.devicesListLoading &&
+            !state?.errorText
+        ) {
+            fetchDevices(activeTab);
+        }
+    }, [activeTab, fetchDevices, tabStates]);
+
+    useEffect(() => {
+        const state = tabStates?.[activeTab];
+        const jobDetailsRef = jobDetailsRefs?.[activeTab]?.current;
+
+        if (
+            state?.isCartSubmitted &&
+            jobDetailsRef &&
+            typeof jobDetailsRef.runAllSteps === "function"
+        ) {
+            jobDetailsRef.runAllSteps();
+        }
+    }, [tabStates, activeTab]);
+
+    const handleDeviceSelect = (device) => {
+        updateTabState(activeTab, (prevState) => {
+            const exists = prevState.selectedDeviceDetails.some(
+                (d) => d.productId === device.productId
+            );
+            if (exists) return {};
+            return {
+                selectedDeviceDetails: [
+                    ...prevState.selectedDeviceDetails,
+                    device,
+                ],
+            };
+        });
+    };
+
+    const hideSaveButtonHandler = () => {
+        updateTabState(activeTab, { showQuoteButton: false });
+    };
+
+    const resetState = () => {
+        setTabStates([{ ...defaultState }, { ...defaultState }]);
+        setActiveTab(0);
+        onClose();
+    };
+
+    const renderTemplate = (tabIndex) => {
+        const {
+            devicesList,
+            selectedDeviceDetails,
+            isCartSubmitted,
+            showQuoteButton,
+            errorText,
+            devicesListLoading,
+        } = tabStates[tabIndex] || defaultState;
+
+        return (
+            <Grid container spacing={2} style={{ justifyContent: "center" }}>
+                {showQuoteButton && (
+                    <Grid item xs={12} md={selectedDeviceDetails.length > 0 ? 2 : 3}>
+                        <LinesContainer selectedCount={selectedDeviceDetails.length} />
+                    </Grid>
+                )}
+                <Grid item xs={12} md={selectedDeviceDetails.length > 0 ? 7 : 9}>
+                    {!isCartSubmitted ? (
+                        <>
+                            {devicesListLoading && <p>Loading devices...</p>}
+                            {errorText && <p>{errorText}</p>}
+                            {!devicesListLoading && !errorText && (
+                                <Devices
+                                    devicesList={devicesList}
+                                    onDeviceSelect={handleDeviceSelect}
+                                    selectedDevices={selectedDeviceDetails}
+                                />
+                            )}
+                        </>
+                    ) : (
+                        <JobDetailsPane
+                            ref={jobDetailsRefs[tabIndex]}
+                            onSuccess={hideSaveButtonHandler}
+                            selectedDeviceCount={selectedDeviceDetails.length}
+                        />
+                    )}
+                </Grid>
+
+                {selectedDeviceDetails.length > 0 && showQuoteButton && (
+                    <Grid item xs={12} md={3}>
+                        <SummaryContainer
+                            selectedDeviceDetails={selectedDeviceDetails}
+                        />
+                        <Button
+                            size="large"
+                            use="primary"
+                            onClick={() =>
+                                updateTabState(tabIndex, { isCartSubmitted: true })
+                            }
+                            style={{ marginTop: "20px", marginLeft: "auto" }}
+                        >
+                            Generate Quote
+                        </Button>
+                    </Grid>
+                )}
+
+                {!showQuoteButton && (
+                    <Box sx={{ display: "flex", justifyContent: "flex-end", mt: 8 }}>
