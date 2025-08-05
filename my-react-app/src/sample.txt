@@ -40,6 +40,10 @@ const CartModal = ({ open, onClose }) => {
   const updateTabState = (index, newStateOrUpdater) => {
     setTabStates((prev) => {
       const updated = [...prev];
+      // Ensure both tabs are always initialized
+      while (updated.length < 2) {
+        updated.push({ ...defaultState });
+      }
       const current = updated[index] || { ...defaultState };
 
       updated[index] =
@@ -83,15 +87,21 @@ const CartModal = ({ open, onClose }) => {
   }, []);
 
   useEffect(() => {
-    const state = tabStates?.[activeTab];
+    const state = tabStates[activeTab];
     if (
-      !state?.devicesList?.length &&
-      !state?.devicesListLoading &&
-      !state?.errorText
+      !state ||
+      (!state.devicesList?.length &&
+        !state.devicesListLoading &&
+        !state.errorText)
     ) {
       fetchDevices(activeTab);
     }
-  }, [activeTab, fetchDevices, tabStates]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeTab]);
+
+  useEffect(() => {
+    console.log('tabStates:', tabStates);
+  }, [tabStates]);
 
   useEffect(() => {
     const state = tabStates?.[activeTab];
