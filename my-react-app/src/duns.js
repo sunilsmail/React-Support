@@ -1,79 +1,70 @@
-import Table, {
-  TableHead,
-  TableHeader,
-  CellStyle,
-  TableBody,
-  TableRow,
-  Cell,
-} from "@vds/tables";
-import PropTypes from "prop-types";
-import React, { useState } from "react";
+import React from 'react';
 
-function DunsTable({ data, onSelect }) {
-  const [selecteddunsLocId, setSelecteddunsLocId] = useState('');
+const styles = {
+  table: {
+    width: '100%',
+    borderCollapse: 'collapse',
+    fontFamily: 'Arial, sans-serif',
+  },
+  th: {
+    textAlign: 'left',
+    fontWeight: 'bold',
+    padding: '12px 16px',
+    borderBottom: '2px solid black',
+  },
+  td: {
+    padding: '12px 16px',
+    textAlign: 'left',
+    borderBottom: '4px solid orange', // Bottom border as shown in image
+  },
+  trHover: {
+    backgroundColor: '#f9f9f9',
+  },
+  radio: {
+    transform: 'scale(1.2)',
+  },
+};
 
-  const handleSelection = (dunsLocId) => {
-    setSelecteddunsLocId(dunsLocId);
-    if (onSelect) onSelect(dunsLocId);
-  };
-
-  if (!data || data.length === 0) {
-    return <p>No matching business found.</p>;
-  }
-
+function StyledTable({ data, selectedId, onSelect }) {
   return (
-    <Table striped={false} surface="light" padding="standard">
-      <TableHead>
-        <TableHeader><CellStyle>Select</CellStyle></TableHeader>
-        <TableHeader><CellStyle>DUNS</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Business Name</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Address</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Contact Name</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Contact Number</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Employee Count</CellStyle></TableHeader>
-      </TableHead>
-
-      <TableBody>
-        {data.map((record) => (
-          <TableRow key={record.dunsLocId}>
-            <Cell>
+    <table style={styles.table}>
+      <thead>
+        <tr>
+          <th style={styles.th}></th>
+          <th style={styles.th}>DUNs</th>
+          <th style={styles.th}>Business name</th>
+          <th style={styles.th}>Address</th>
+          <th style={styles.th}>Contact name</th>
+          <th style={styles.th}>Contact number</th>
+          <th style={styles.th}>Employee Count</th>
+        </tr>
+      </thead>
+      <tbody>
+        {data?.map((item) => (
+          <tr key={item.dunsLocId} style={styles.trHover}>
+            <td style={styles.td}>
               <input
                 type="radio"
-                name="dunSelect"
-                value={record.dunsLocId}
-                checked={selecteddunsLocId === record.dunsLocId}
-                onChange={() => handleSelection(record.dunsLocId)}
+                name="dunsSelect"
+                value={item.dunsLocId}
+                checked={selectedId === item.dunsLocId}
+                onChange={() => onSelect(item.dunsLocId)}
+                style={styles.radio}
               />
-            </Cell>
-            <Cell>{record.dunsLocId}</Cell>
-            <Cell>{record.businessName}</Cell>
-            <Cell>{record?.businessAddress?.addressLine1 || '-'}</Cell>
-            <Cell>{record?.contactName || '-'}</Cell>
-            <Cell>{record?.phoneNumber || '-'}</Cell>
-            <Cell>{record?.employeeCount || '-'}</Cell>
-          </TableRow>
+            </td>
+            <td style={styles.td}>{item.dunsLocId}</td>
+            <td style={styles.td}>{item.businessName || '-'}</td>
+            <td style={styles.td}>
+              {item.businessAddress?.addressLine1 || '-'}
+            </td>
+            <td style={styles.td}>{item.contactName || '-'}</td>
+            <td style={styles.td}>{item.phoneNumber || '-'}</td>
+            <td style={styles.td}>{item.employeeCount || '-'}</td>
+          </tr>
         ))}
-      </TableBody>
-    </Table>
+      </tbody>
+    </table>
   );
 }
 
-DunsTable.propTypes = {
-  data: PropTypes.arrayOf(
-    PropTypes.shape({
-      dunsLocId: PropTypes.string.isRequired,
-      businessName: PropTypes.string,
-      contactName: PropTypes.string,
-      phoneNumber: PropTypes.string,
-      employeeCount: PropTypes.oneOfType([PropTypes.number, PropTypes.string]),
-      businessAddress: PropTypes.shape({
-        addressLine1: PropTypes.string,
-        city: PropTypes.string,
-        state: PropTypes.string,
-      }),
-    })
-  ).isRequired,
-  onSelect: PropTypes.func,
-};
-
-export default DunsTable;
+export default StyledTable;
