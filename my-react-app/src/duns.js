@@ -8,8 +8,8 @@ import {
   TableRow,
   Cell,
 } from "@vds/tables";
-import { Input } from "@vds/input";
-import { PxIcon } from "@vds/icons"; // Assuming this is where PxIcon comes from
+import { Input } from "@vds/inputs";
+import { PxIcon } from "@vds/icons";
 import PropTypes from "prop-types";
 
 const Container = styled.div`
@@ -22,6 +22,13 @@ const Header = styled.div`
   align-items: center;
   gap: 1rem;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+`;
+
+const SearchWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
 `;
 
 const StyledInput = styled(Input)`
@@ -38,6 +45,18 @@ const ResetButton = styled.button`
   padding: 0;
 `;
 
+const GenerateLink = styled.a`
+  color: #0071eb;
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: none;
+  font-size: 14px;
+
+  &:hover {
+    text-decoration: underline;
+  }
+`;
+
 const StyledTable = styled(Table)`
   font-size: 14px;
 
@@ -52,11 +71,23 @@ const StyledTable = styled(Table)`
   }
 
   tr {
-    height: 40px;
+    height: 44px;
   }
 
-  tr.selected {
-    background-color: #e8f0fe;
+  .selected-row {
+    border-bottom: 3px solid orange;
+  }
+
+  .radio-cell {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  input[type="radio"] {
+    accent-color: black;
+    width: 16px;
+    height: 16px;
   }
 `;
 
@@ -64,7 +95,7 @@ function DunsTable({ data, onSelect }) {
   const [selectedId, setSelectedId] = useState("");
   const [search, setSearch] = useState("");
 
-  const handleRowClick = (dunsLocId) => {
+  const handleRowSelect = (dunsLocId) => {
     setSelectedId(dunsLocId);
     onSelect?.(dunsLocId);
   };
@@ -81,16 +112,20 @@ function DunsTable({ data, onSelect }) {
     <Container>
       <Header>
         <ResetButton onClick={handleReset}>Reset all</ResetButton>
-        <StyledInput
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder="XXXXXXXXX"
-          suffix={<PxIcon icon="search" size="s" />}
-        />
+        <SearchWrapper>
+          <StyledInput
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="XXXXXXXXX"
+            suffix={<PxIcon icon="search" size="s" />}
+          />
+        </SearchWrapper>
+        <GenerateLink href="#">Generate new DUNs number</GenerateLink>
       </Header>
 
       <StyledTable surface="light" padding="compact">
         <TableHead>
+          <TableHeader />
           <TableHeader>DUNS ID</TableHeader>
           <TableHeader>Business Name</TableHeader>
           <TableHeader>Contact Name</TableHeader>
@@ -100,28 +135,40 @@ function DunsTable({ data, onSelect }) {
         </TableHead>
         <TableBody>
           {filteredData?.length > 0 ? (
-            filteredData.map((row) => (
-              <TableRow
-                key={row.dunsLocId}
-                onClick={() => handleRowClick(row.dunsLocId)}
-                className={selectedId === row.dunsLocId ? "selected" : ""}
-                style={{ cursor: "pointer" }}
-              >
-                <Cell>{row.dunsLocId}</Cell>
-                <Cell>{row.businessName || "-"}</Cell>
-                <Cell>{row.contactName || "-"}</Cell>
-                <Cell>{row.phoneNumber || "-"}</Cell>
-                <Cell>{row.employeeCount ?? "-"}</Cell>
-                <Cell>
-                  {[row.businessAddress?.addressLine1, row.businessAddress?.city, row.businessAddress?.state]
-                    .filter(Boolean)
-                    .join(", ") || "-"}
-                </Cell>
-              </TableRow>
-            ))
+            filteredData.map((row) => {
+              const isSelected = selectedId === row.dunsLocId;
+              return (
+                <TableRow
+                  key={row.dunsLocId}
+                  onClick={() => handleRowSelect(row.dunsLocId)}
+                  className={isSelected ? "selected-row" : ""}
+                  style={{ cursor: "pointer" }}
+                >
+                  <Cell className="radio-cell">
+                    <input
+                      type="radio"
+                      name="dunsSelect"
+                      checked={isSelected}
+                      onChange={() => handleRowSelect(row.dunsLocId)}
+                      onClick={(e) => e.stopPropagation()}
+                    />
+                  </Cell>
+                  <Cell>{row.dunsLocId}</Cell>
+                  <Cell>{row.businessName || "-"}</Cell>
+                  <Cell>{row.contactName || "-"}</Cell>
+                  <Cell>{row.phoneNumber || "-"}</Cell>
+                  <Cell>{row.employeeCount ?? "-"}</Cell>
+                  <Cell>
+                    {[row.businessAddress?.addressLine1, row.businessAddress?.city, row.businessAddress?.state]
+                      .filter(Boolean)
+                      .join(", ") || "-"}
+                  </Cell>
+                </TableRow>
+              );
+            })
           ) : (
             <TableRow>
-              <Cell colSpan={6} style={{ textAlign: "center" }}>
+              <Cell colSpan={7} style={{ textAlign: "center" }}>
                 No records found
               </Cell>
             </TableRow>
