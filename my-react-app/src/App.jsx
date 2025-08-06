@@ -1,33 +1,46 @@
-import { useEffect } from 'react';
-import { mockPostCalls } from './src/api/api-methods/api-calls';
-
+import React, { useState } from 'react';
 function App() {
-  useEffect(() => {
-    const runPosts = async () => {
-      const firstTen = mockPostCalls.slice(0, 10);
-      const remaining = mockPostCalls.slice(10);
 
-      // 🔹 Run first 10 in parallel
-      const firstResults = await Promise.all(firstTen.map((call) => call()));
-      console.log('First 10 Results:', firstResults);
+  const [data, setData] = useState([{
+    name: 'John Doe',
+    age: 30,
+    email: 'John@gmail.com'
+  }, {
+    name: 'Samson',
+    age: 32,
+    email: 'Samson@gmail.com'
+  }]);
 
-      // 🔸 Run remaining 4 sequentially
-      const remainingResults = [];
-      for (const call of remaining) {
-        const result = await call();
-        remainingResults.push(result);
-      }
+  const updateData = () => {
+    const newData = {
+      name: 'Jane Doe',
+      age: 28,
+      email: ''
+    }
+    const updatedData = [...data, newData];
+    setData(updatedData);
+    console.log('Updated Data:', updatedData);
+  }
 
-      console.log('Remaining 4 Results:', remainingResults);
-    };
-
-    runPosts();
-  }, []);
+  const handleClick = () => {
+    updateData();
+    const updatedUsers = data.filter(user => user.age === 28);
+    console.log('Filtered Users:', updatedUsers);
+  }
 
   return (
     <div>
       <h1>Mock POST API Demo</h1>
       <p>Check the console for POST request results.</p>
+      <button onClick={handleClick}>ClickMe</button>
+      {data.map((user, index) => (
+        <div key={index}>
+          <h2>{user.name}</h2>
+          <p>Age: {user.age}</p>
+          <p>Email: {user.email}</p>
+        </div>)
+      )
+      }
     </div>
   );
 }
