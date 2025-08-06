@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import styled from "styled-components";
+import PropTypes from "prop-types";
 import {
   Table,
   TableHead,
@@ -10,33 +11,34 @@ import {
 } from "@vds/tables";
 import { Input } from "@vds/inputs";
 import { PxIcon } from "@vds/icons";
-import PropTypes from "prop-types";
+import { Button } from "@vds/buttons";
 
+// Styled components
 const Container = styled.div`
   padding: 1rem;
 `;
 
-const Header = styled.div`
+const StyledHeader = styled.div`
   display: flex;
-  justify-content: flex-end;
+  justify-content: space-between;
+  flex-wrap: wrap;
   align-items: center;
   gap: 1rem;
-  margin-bottom: 0.75rem;
-  flex-wrap: wrap;
+  margin-bottom: 1rem;
 `;
 
-const SearchWrapper = styled.div`
+const SearchSection = styled.div`
   display: flex;
   align-items: center;
-  gap: 0.25rem;
+  gap: 0.5rem;
 `;
 
 const StyledInput = styled(Input)`
-  max-width: 200px;
+  width: 200px;
   height: 32px;
 `;
 
-const ResetButton = styled.button`
+const ResetLink = styled.button`
   background: none;
   border: none;
   color: #0071eb;
@@ -51,10 +53,19 @@ const GenerateLink = styled.a`
   cursor: pointer;
   text-decoration: none;
   font-size: 14px;
-
   &:hover {
     text-decoration: underline;
   }
+`;
+
+const Tooltip = styled.div`
+  margin-top: 0.5rem;
+  padding: 1rem;
+  background: #f9f9f9;
+  border: 1px solid #ccc;
+  max-width: 400px;
+  font-size: 14px;
+  border-radius: 4px;
 `;
 
 const StyledTable = styled(Table)`
@@ -91,9 +102,14 @@ const StyledTable = styled(Table)`
   }
 `;
 
-function DunsTable({ data, onSelect }) {
+function DUNSTable({ data, onSelect }) {
   const [selectedId, setSelectedId] = useState("");
   const [search, setSearch] = useState("");
+  const [alternateDUN, setAlternateDUN] = useState("");
+  const [isHiddenTooltip, setIsHiddenTooltip] = useState(false);
+  const [isValidDUN, setIsValidDUN] = useState(true);
+  const [isDisabledDUN, setIsDisabledDUN] = useState(false);
+  const inputRef = useRef(null);
 
   const handleRowSelect = (dunsLocId) => {
     setSelectedId(dunsLocId);
@@ -106,22 +122,91 @@ function DunsTable({ data, onSelect }) {
 
   const handleReset = () => {
     setSearch("");
+    setAlternateDUN("");
+    setIsHiddenTooltip(false);
+    setIsValidDUN(true);
+    setSelectedId("");
+  };
+
+  const handleSearchChange = (e) => setSearch(e.target.value);
+
+  const onClickAlternateDUN = () => setIsHiddenTooltip(false);
+  const onClickCloseDUN = () => setIsHiddenTooltip(true);
+
+  const onClickSubmitEmpCount = () => {
+    const count = parseInt(alternateDUN, 10);
+    if (isNaN(count) || count < 1) {
+      setIsValidDUN(false);
+    } else {
+      setIsValidDUN(true);
+      setIsDisabledDUN(true);
+      // submit logic
+    }
+  };
+
+  const onChangeAlternateDUN = (e) => {
+    setAlternateDUN(e.target.value);
+    setIsValidDUN(true);
+    setIsDisabledDUN(false);
   };
 
   return (
     <Container>
-      <Header>
-        <ResetButton onClick={handleReset}>Reset all</ResetButton>
-        <SearchWrapper>
+      <StyledHeader>
+        <SearchSection>
+          <ResetLink onClick={handleReset}>Reset all</ResetLink>
           <StyledInput
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
             placeholder="XXXXXXXXX"
             suffix={<PxIcon icon="search" size="s" />}
+            maxLength="9"
           />
-        </SearchWrapper>
-        <GenerateLink href="#">Generate new DUNs number</GenerateLink>
-      </Header>
+          {search !== "" && search.length < 9 && (
+            <span style={{ fontSize: "12px", color: "red" }}>
+              Please enter a valid 9 digit DUNS ID
+            </span>
+          )}
+        </SearchSection>
+        <div>
+          <GenerateLink onClick={onClickAlternateDUN}>
+            Generate new DUNs number
+          </GenerateLink>
+          {!isHiddenTooltip && (
+            <Tooltip>
+              <div>Enter the number of Employees of the business</div>
+              <div style={{ marginTop: "0.5rem" }}>
+                <div>Employee count</div>
+                <input
+                  type="text"
+                  value={alternateDUN}
+                  onChange={onChangeAlternateDUN}
+                  ref={inputRef}
+                  className={`Form-input ${!isValidDUN ? "errorInput" : ""}`}
+                  style={{ width: "100%", padding: "6px", marginTop: "4px" }}
+                />
+                {!isValidDUN && (
+                  <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+                    Please enter an employee count greater than 1.
+                  </div>
+                )}
+              </div>
+              <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
+                <Button variant="secondary" onClick={onClickCloseDUN}>
+                  Cancel
+                </Button>
+                <Button
+                  variant="primary"
+                  disabled={isDisabledDUN}
+                  onClick={onClickSubmitEmpCount}
+                >
+                  Submit
+                </Button>
+              </div>
+            </Tooltip>
+          )}
+        </div>
+      </StyledHeader>
 
       <StyledTable surface="light" padding="compact">
         <TableHead>
@@ -134,7 +219,7 @@ function DunsTable({ data, onSelect }) {
           <TableHeader>Address</TableHeader>
         </TableHead>
         <TableBody>
-          {filteredData?.length > 0 ? (
+          {filteredData.length > 0 ? (
             filteredData.map((row) => {
               const isSelected = selectedId === row.dunsLocId;
               return (
@@ -179,7 +264,7 @@ function DunsTable({ data, onSelect }) {
   );
 }
 
-DunsTable.propTypes = {
+DUNSTable.propTypes = {
   data: PropTypes.arrayOf(
     PropTypes.shape({
       dunsLocId: PropTypes.string.isRequired,
@@ -197,4 +282,4 @@ DunsTable.propTypes = {
   onSelect: PropTypes.func,
 };
 
-export default DunsTable;
+export default DUNSTable;
