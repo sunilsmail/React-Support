@@ -13,24 +13,32 @@ import { Input } from "@vds/inputs";
 import { PxIcon } from "@vds/icons";
 import { Button } from "@vds/buttons";
 
-// Styled components
+// Styled Components
+
 const Container = styled.div`
   padding: 1rem;
 `;
 
 const StyledHeader = styled.div`
   display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 1rem;
+  flex-direction: column;
+  gap: 0.5rem;
   margin-bottom: 1rem;
+`;
+
+const HeaderWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  justify-content: space-between;
 `;
 
 const SearchSection = styled.div`
   display: flex;
   align-items: center;
   gap: 0.5rem;
+  flex-wrap: wrap;
 `;
 
 const StyledInput = styled(Input)`
@@ -106,7 +114,7 @@ function DUNSTable({ data, onSelect }) {
   const [selectedId, setSelectedId] = useState("");
   const [search, setSearch] = useState("");
   const [alternateDUN, setAlternateDUN] = useState("");
-  const [isHiddenTooltip, setIsHiddenTooltip] = useState(false);
+  const [isHiddenTooltip, setIsHiddenTooltip] = useState(true);
   const [isValidDUN, setIsValidDUN] = useState(true);
   const [isDisabledDUN, setIsDisabledDUN] = useState(false);
   const inputRef = useRef(null);
@@ -123,13 +131,12 @@ function DUNSTable({ data, onSelect }) {
   const handleReset = () => {
     setSearch("");
     setAlternateDUN("");
-    setIsHiddenTooltip(false);
+    setIsHiddenTooltip(true);
     setIsValidDUN(true);
     setSelectedId("");
   };
 
   const handleSearchChange = (e) => setSearch(e.target.value);
-
   const onClickAlternateDUN = () => setIsHiddenTooltip(false);
   const onClickCloseDUN = () => setIsHiddenTooltip(true);
 
@@ -140,7 +147,7 @@ function DUNSTable({ data, onSelect }) {
     } else {
       setIsValidDUN(true);
       setIsDisabledDUN(true);
-      // submit logic
+      // Submit logic here
     }
   };
 
@@ -153,59 +160,60 @@ function DUNSTable({ data, onSelect }) {
   return (
     <Container>
       <StyledHeader>
-        <SearchSection>
-          <ResetLink onClick={handleReset}>Reset all</ResetLink>
-          <StyledInput
-            value={search}
-            onChange={handleSearchChange}
-            placeholder="XXXXXXXXX"
-            suffix={<PxIcon icon="search" size="s" />}
-            maxLength="9"
-          />
-          {search !== "" && search.length < 9 && (
-            <span style={{ fontSize: "12px", color: "red" }}>
-              Please enter a valid 9 digit DUNS ID
-            </span>
-          )}
-        </SearchSection>
-        <div>
+        <HeaderWrapper>
+          <SearchSection>
+            <ResetLink onClick={handleReset}>Reset all</ResetLink>
+            <StyledInput
+              value={search}
+              onChange={handleSearchChange}
+              placeholder="XXXXXXXXX"
+              suffix={<PxIcon icon="search" size="s" />}
+              maxLength="9"
+            />
+            {search !== "" && search.length < 9 && (
+              <span style={{ fontSize: "12px", color: "red" }}>
+                Please enter a valid 9 digit DUNS ID
+              </span>
+            )}
+          </SearchSection>
           <GenerateLink onClick={onClickAlternateDUN}>
             Generate new DUNs number
           </GenerateLink>
-          {!isHiddenTooltip && (
-            <Tooltip>
-              <div>Enter the number of Employees of the business</div>
-              <div style={{ marginTop: "0.5rem" }}>
-                <div>Employee count</div>
-                <input
-                  type="text"
-                  value={alternateDUN}
-                  onChange={onChangeAlternateDUN}
-                  ref={inputRef}
-                  className={`Form-input ${!isValidDUN ? "errorInput" : ""}`}
-                  style={{ width: "100%", padding: "6px", marginTop: "4px" }}
-                />
-                {!isValidDUN && (
-                  <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
-                    Please enter an employee count greater than 1.
-                  </div>
-                )}
-              </div>
-              <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
-                <Button variant="secondary" onClick={onClickCloseDUN}>
-                  Cancel
-                </Button>
-                <Button
-                  variant="primary"
-                  disabled={isDisabledDUN}
-                  onClick={onClickSubmitEmpCount}
-                >
-                  Submit
-                </Button>
-              </div>
-            </Tooltip>
-          )}
-        </div>
+        </HeaderWrapper>
+
+        {!isHiddenTooltip && (
+          <Tooltip>
+            <div>Enter the number of Employees of the business</div>
+            <div style={{ marginTop: "0.5rem" }}>
+              <div>Employee count</div>
+              <input
+                type="text"
+                value={alternateDUN}
+                onChange={onChangeAlternateDUN}
+                ref={inputRef}
+                className={`Form-input ${!isValidDUN ? "errorInput" : ""}`}
+                style={{ width: "100%", padding: "6px", marginTop: "4px" }}
+              />
+              {!isValidDUN && (
+                <div style={{ color: "red", fontSize: "12px", marginTop: "4px" }}>
+                  Please enter an employee count greater than 1.
+                </div>
+              )}
+            </div>
+            <div style={{ marginTop: "1rem", display: "flex", gap: "1rem" }}>
+              <Button variant="secondary" onClick={onClickCloseDUN}>
+                Cancel
+              </Button>
+              <Button
+                variant="primary"
+                disabled={isDisabledDUN}
+                onClick={onClickSubmitEmpCount}
+              >
+                Submit
+              </Button>
+            </div>
+          </Tooltip>
+        )}
       </StyledHeader>
 
       <StyledTable surface="light" padding="compact">
@@ -244,7 +252,11 @@ function DUNSTable({ data, onSelect }) {
                   <Cell>{row.phoneNumber || "-"}</Cell>
                   <Cell>{row.employeeCount ?? "-"}</Cell>
                   <Cell>
-                    {[row.businessAddress?.addressLine1, row.businessAddress?.city, row.businessAddress?.state]
+                    {[
+                      row.businessAddress?.addressLine1,
+                      row.businessAddress?.city,
+                      row.businessAddress?.state,
+                    ]
                       .filter(Boolean)
                       .join(", ") || "-"}
                   </Cell>
