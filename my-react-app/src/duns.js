@@ -1,62 +1,64 @@
-import Table, {
+import React, { useState } from "react";
+import {
+  Table,
   TableHead,
   TableHeader,
-  CellStyle,
   TableBody,
   TableRow,
   Cell,
 } from "@vds/tables";
 import PropTypes from "prop-types";
-import React, { useState } from "react";
 
-function DunsTable({ data, onSelect }) {
-  const [selecteddunsLocId, setSelecteddunsLocId] = useState('');
+const DunsTable = ({ data, onSelect }) => {
+  const [selectedId, setSelectedId] = useState("");
 
-  const handleSelection = (dunsLocId) => {
-    setSelecteddunsLocId(dunsLocId);
-    if (onSelect) onSelect(dunsLocId);
+  const handleRowClick = (dunsLocId) => {
+    setSelectedId(dunsLocId);
+    onSelect?.(dunsLocId);
   };
 
-  if (!data || data.length === 0) {
-    return <p>No matching business found.</p>;
-  }
-
   return (
-    <Table striped={false} surface="light" padding="standard">
+    <Table surface="light" padding="standard">
       <TableHead>
-        <TableHeader><CellStyle>Select</CellStyle></TableHeader>
-        <TableHeader><CellStyle>DUNS</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Business Name</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Address</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Contact Name</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Contact Number</CellStyle></TableHeader>
-        <TableHeader><CellStyle>Employee Count</CellStyle></TableHeader>
+        <TableHeader>DUNS ID</TableHeader>
+        <TableHeader>Business Name</TableHeader>
+        <TableHeader>Contact Name</TableHeader>
+        <TableHeader>Phone Number</TableHeader>
+        <TableHeader>Employee Count</TableHeader>
+        <TableHeader>Address</TableHeader>
       </TableHead>
-
       <TableBody>
-        {data.map((record) => (
-          <TableRow key={record.dunsLocId}>
-            <Cell>
-              <input
-                type="radio"
-                name="dunSelect"
-                value={record.dunsLocId}
-                checked={selecteddunsLocId === record.dunsLocId}
-                onChange={() => handleSelection(record.dunsLocId)}
-              />
+        {data?.length > 0 ? (
+          data.map((row) => (
+            <TableRow
+              key={row.dunsLocId}
+              onClick={() => handleRowClick(row.dunsLocId)}
+              selected={selectedId === row.dunsLocId}
+              style={{ cursor: "pointer" }}
+            >
+              <Cell>{row.dunsLocId}</Cell>
+              <Cell>{row.businessName || "-"}</Cell>
+              <Cell>{row.contactName || "-"}</Cell>
+              <Cell>{row.phoneNumber || "-"}</Cell>
+              <Cell>{row.employeeCount ?? "-"}</Cell>
+              <Cell>
+                {[row.businessAddress?.addressLine1, row.businessAddress?.city, row.businessAddress?.state]
+                  .filter(Boolean)
+                  .join(", ") || "-"}
+              </Cell>
+            </TableRow>
+          ))
+        ) : (
+          <TableRow>
+            <Cell colSpan={6} style={{ textAlign: "center" }}>
+              No records found
             </Cell>
-            <Cell>{record.dunsLocId}</Cell>
-            <Cell>{record.businessName}</Cell>
-            <Cell>{record?.businessAddress?.addressLine1 || '-'}</Cell>
-            <Cell>{record?.contactName || '-'}</Cell>
-            <Cell>{record?.phoneNumber || '-'}</Cell>
-            <Cell>{record?.employeeCount || '-'}</Cell>
           </TableRow>
-        ))}
+        )}
       </TableBody>
     </Table>
   );
-}
+};
 
 DunsTable.propTypes = {
   data: PropTypes.arrayOf(
