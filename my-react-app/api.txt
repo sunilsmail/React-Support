@@ -1,0 +1,331 @@
+
+1. API - /cartms/createCart
+Request - Hardcode
+{
+    "inlineQuote": false,
+    "systemId": "NETACE",
+    "header": {
+        "clientAppName": "B2B-ORD"
+    }
+}
+2.API - /customerservice/ecpd-profile-id 
+
+{
+    "ecpdId": "5577022",
+    "loadAllInfo": "true",
+    "liabilityType": "C",
+    "quickQuoteforIndirect": false,
+    "header": {
+        "clientAppName": "B2B-ORD",
+      "atgCartId":"{{atgCartIdValue}}", - Get if from first api
+        "cartId": "{{cartIdValue}}" -  Get if from first api
+    }
+}
+
+3. /cartms/addNewLine
+{
+    "noOfLines": 1, - Number of Smartphone lines
+    "customerType": "N",
+    "header": {
+        "clientAppName": "B2B-ORD",
+        "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+4./customerservice/ecpd-profile-addline
+{
+    "ecpdId": "5577022",
+    "fedTaxid": "",
+    "shellAccountNum": "",
+    "inlineQuote": true,
+    "header": {
+        "clientAppName": "B2B-ORD",
+       "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+5./customerservice/storeQuoteCustInformation -- Copy customer info from BE landing page
+{
+    "quoteCustInfo": {
+        "quickQuote": false,
+        "digitalQuote": false,
+        "digitalProspectToggle": false,
+        "depletionType": null,
+        "businessName": "ABC",
+        "contactPerson": "test test",
+        "mobileNum": "",
+        "email": "test@gmail.com",
+        "addressLine1": "123",
+        "addressLine2": "abc",
+        "city": "ALPHARETTA",
+        "state": "GA",
+        "zipcode": "30004",
+        "rootProfileId": "5577022",
+        "customerId": "",
+        "inlineQuote": true
+    },
+    "header": {
+        "clientAppName": "B2B-ORD",
+       "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+6./quoteservice/storeQuoteInformation -
+{
+    "quoteInfoStore": {
+        "qualified": false,
+        "qualifiedCBand": false,
+        "depletionType": null,
+        "quoteName": "BE_Test_Quote",
+        "lineTier": "8",
+        "lineTierRange": "5-99",
+        "quoteType": "Standard",
+        "gPO": null,
+        "govermentProfileId": null,
+        "subAccountEnabled": true,
+        "isConsilidatedTradeIn": true,
+        "snowPilotUserFlag": true,
+        "stark5gbiEnabled": false,
+        "isNewTemplateFlow": false,
+        "isSalesForce": false,
+        "isInstaQuote": false,
+        "quoteToOrderUserFlag": true,
+        "quoteFlow": "",
+        "inlineQuote": true,
+        "isLegacyToInline": "",
+        "numberOfLines": 1, -- Smartphone line count
+        "quotePackageType": "",
+        "moreThan99Lines": false,
+        "inDirectFlow": false
+    },
+    "header": {
+        "clientAppName": "B2B-ORD",
+       "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+
+7./quoteservice/storeQuoteDetail
+
+{
+    "atgCartId": "{{atgCartIdValue}}",
+    "header": {
+        "clientAppName": "B2B-ORD",
+       "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+8./cartms/retrieveSpocDetails
+{
+    "blueJeansSpocUpdate": false,
+    "header": {
+        "clientAppName": "B2B-ORD",
+        "atgCartId": "{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+9./cartms/updateSpocDetails
+{
+    "spocIds": [
+        "99999999"
+    ],
+    "spocNotificationOptions": {
+        "userCcOrderConfEmail": "N",
+        "acceptNotification": "E",
+        "orderConfirmationForShip": "Y",
+        "sendEmailResponseTo": "O",
+        "rejectNotification": "E",
+        "emailContentType": "html",
+        "sendEmailFrom": "M",
+        "spocMyEmail": "test@gmail.com",
+        "spocSalesRepEmail": "surendar.puli@verizonwireless.com",
+        "lockerPickupMTN": null
+    },
+    "header": {
+        "clientAppName": "B2B-ORD",
+        "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+10./customerservice/devicepayment-eligibility
+
+{
+    "customerRequestIndicator": "Y",
+    "installmentTypeCode": "E",
+    "header": {
+        "clientAppName": "B2B-ORD",
+        "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+11.cartms/addDeviceToCart
+{
+	"depletionType": "F",
+	"lines": [
+		{
+			"mtn": "mtn1",
+			"contractTerm": "VERIZON_EDGE",
+			"activateLaterInd": false,
+			"newLineOrAAL": true,
+			"autoAddSim": false,
+			"device": {
+				"sorId": "SMA366UZKV",
+				"qty": 1
+			},
+			"plan": {
+				"sorId": "32066",
+				"collectionCode": "BUONE",
+				"isExceptionPlan": false
+			},
+			"sim": {
+				"isSimCpe": false,
+				"simId": null,
+				"sorId": null
+			},
+			"features": [
+				{
+					"sorId": "88619",
+					"type": "SFO",
+					"actionIndicator": "A"
+				}
+			],
+			"portIn": false,
+			"lineActivityType": "NEW",
+			"dpMonths": 36,
+			"firstInstallment": 11.14,
+			"monthlyInstallment": 11.11,
+			"lineId": "mtn1",
+			"downPayment": 0,
+			"agentOrFullRetailPrice": 0
+		},
+		{
+			"mtn": "mtn2",
+			"contractTerm": "VERIZON_EDGE",
+			"activateLaterInd": false,
+			"newLineOrAAL": true,
+			"autoAddSim": false,
+			"device": {
+				"sorId": "SMA366UZKV",
+				"qty": 1
+			},
+			"plan": {
+				"sorId": "32066",
+				"collectionCode": "BUONE",
+				"isExceptionPlan": false
+			},
+			"sim": {
+				"isSimCpe": false,
+				"simId": null,
+				"sorId": null
+			},
+			"features": [
+				{
+					"sorId": "88619",
+					"type": "SFO",
+					"actionIndicator": "A"
+				}
+			],
+			"portIn": false,
+			"lineActivityType": "NEW",
+			"dpMonths": 36,
+			"firstInstallment": 11.14,
+			"monthlyInstallment": 11.11,
+			"lineId": "mtn2",
+			"downPayment": 0,
+			"agentOrFullRetailPrice": 0
+		},
+		{
+			"mtn": "mtn3",
+			"contractTerm": "VERIZON_EDGE",
+			"activateLaterInd": false,
+			"newLineOrAAL": true,
+			"autoAddSim": false,
+			"device": {
+				"sorId": "SMA366UZKV",
+				"qty": 1
+			},
+			"plan": {
+				"sorId": "32066",
+				"collectionCode": "BUONE",
+				"isExceptionPlan": false
+			},
+			"sim": {
+				"isSimCpe": false,
+				"simId": null,
+				"sorId": null
+			},
+			"features": [
+				{
+					"sorId": "88619",
+					"type": "SFO",
+					"actionIndicator": "A"
+				}
+			],
+			"portIn": false,
+			"lineActivityType": "NEW",
+			"dpMonths": 36,
+			"firstInstallment": 11.14,
+			"monthlyInstallment": 11.11,
+			"lineId": "mtn3",
+			"downPayment": 0,
+			"agentOrFullRetailPrice": 0
+		}
+	],
+	"header": {
+		"clientAppName": "B2B-ORD",
+		"atgCartId": "b36586b2-0b1d-4f99-a06d-01f32cd3ad93",
+		"cartId": "b36586b2-0b1d-4f99-a06d-01f32cd3ad93",
+		"lineCount": 3
+	}
+}
+12./cartms/reviewCart  - in response check  "cpqCartId", "cpqCartVersionId" 
+ "totalDueToday": 829.99,"totalDueMonthly": 0.0,
+
+{
+    "spoInsuranceRemovalCheckEnabled": true,
+    "header": {
+        "clientAppName": "B2B-ORD",
+          "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}",
+        "lineCount": 1  - Smartphone count
+    }
+}
+13./cartms/validateCartLite
+{
+    "header": {
+        "clientAppName": "B2B-ORD",
+         "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}",
+        "lineCount": 1
+    },
+    "d2DActiveCartAfterRelease": false
+}
+14./quoteservice/createCpqQuoteAndGenerateDoc - you will get quote id 
+{
+    "customTemplateId": "",
+    "cpqCartId": "{{cpqCartId}}",
+    "cpqCartVersionId": "{{cpqCartVersionId}}",
+    "userId": "chapash",
+    "locationCode": "0026301",
+    "quickQuoteFlow": false,
+    "saveQuoteAction": false,
+    "inlineQuote": true,
+    "quoteId": "",
+    "cpqQuoteMetricVO": {
+        "cpqCartVersionId": "{{cpqCartVersionId}}",
+        "metricJson": ""
+    },
+    "quoteType": "Digital Prospect",
+    "header": {
+        "clientAppName": "B2B-ORD",
+       "atgCartId":"{{atgCartIdValue}}",
+        "cartId": "{{cartIdValue}}"
+    }
+}
+
+1. Create Cart (APIS - 1 to 10) .
+2. Add Plan/Device to Cart (APIS - 11) 
+3. Validate Cart(APIS 12- 13)
+4. Quote Creation (API 14)
+
+Need to Show quoteId , "totalDueToday" ,"totalDueMonthly" in UI

@@ -1,0 +1,22 @@
+1.-- /securityservice/updateUserParam
+{
+    "header": {},
+    "ignoreCache": false,
+    "optionalLoginUserDetails": {
+        "MODULE_NAME": "QUICK_QUOTE",
+        "IS_READ_CPQ": false,
+        "B2B_QUICK_QUOTE": true,
+        "SELECTED_MTNS": null,
+        "IS_SOE": true,
+        "SYSTEM_ID": "NETACE",
+        "LOCATION_CODE": "0026301",
+        "SALES_REPID": "EE818",
+        "ordLocation": "0026301",
+        "salesRepId": "EE818",
+        "wfhStatus": true,
+        "IS_AAL_ALLOWED": false,
+        "isFetchParamsFromCustomer": false,
+        "COSTCO_B360_FLOW": false,
+        "NationalRetailer": ""
+    }
+}
