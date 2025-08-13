@@ -64,3 +64,7 @@ describe('BusinessForm', () => {
     render(<BusinessForm />);
     const input = screen.getByTestId('mock-input');
     expect(input).toHaveValue('');
+    expect(input).toHaveAttribute('maxLength', '9');
+    expect(input).toHaveAttribute('placeholder', 'XXXXXXXXX');
+  });
+});
