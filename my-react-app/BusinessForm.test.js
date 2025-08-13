@@ -7,7 +7,7 @@ jest.mock('@vds/inputs', () => ({
   Input: (props) => <input data-testid="mock-input" {...props} />,
 }));
 jest.mock('@vds/tooltips', () => ({
-  Tooltip: ( children ) => <span data-testid="mock-tooltip">{children}</span>,
+  Tooltip: ({ children }) => <span data-testid="mock-tooltip">{children}</span>,
 }));
 
 // Mock DunsTable as requested
@@ -55,4 +55,6 @@ describe('BusinessForm', () => {
     const input = screen.getByTestId('mock-input');
     expect(input).toHaveValue('');
     expect(input).toHaveAttribute('maxLength', '9');
-    expect(input).toHaveAttribute('placeholder',
+    expect(input).toHaveAttribute('placeholder', 'XXXXXXXXX');
+  });
+});
