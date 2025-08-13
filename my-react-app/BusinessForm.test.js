@@ -7,7 +7,7 @@ jest.mock('@vds/inputs', () => ({
   Input: (props) => <input data-testid="mock-input" {...props} />,
 }));
 jest.mock('@vds/tooltips', () => ({
-  Tooltip: ({ children }) => <span data-testid="mock-tooltip">{children}</span>,
+  Tooltip: ( children ) => <span data-testid="mock-tooltip">{children}</span>,
 }));
 
 // Mock DunsTable as requested
