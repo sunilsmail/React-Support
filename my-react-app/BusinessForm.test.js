@@ -2,27 +2,25 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import BusinessForm from './BusinessForm';
 
-// Mock @vds/inputs, @vds/tooltips, and DunsTable
+// Mock @vds/inputs and @vds/tooltips
 jest.mock('@vds/inputs', () => ({
   Input: (props) => <input data-testid="mock-input" {...props} />,
 }));
 jest.mock('@vds/tooltips', () => ({
-  Tooltip: ({ children }) => <span data-testid="mock-tooltip">{children}</span>,
+  Tooltip: ( children ) => <span data-testid="mock-tooltip">{children}</span>,
 }));
-const mockOnSelect = jest.fn();
-jest.mock('./DunsTable', () => (props) => (
-  <div data-testid="mock-dunstable">
-    {props.data.map((row) => (
-      <div
-        key={row.dunsLocId}
-        data-testid="duns-row"
-        onClick={() => props.onSelect && props.onSelect(row.dunsLocId)}
-      >
-        {row.dunsLocId}
+
+// Mock DunsTable as requested
+jest.mock('./DunsTable', () => {
+  function DunsTableMock(props) {
+    return (
+      <div data-testid="mock-dunstable">
+        {JSON.stringify(props)}
       </div>
-    ))}
-  </div>
-));
+    );
+  }
+  return DunsTableMock;
+});
 
 describe('BusinessForm', () => {
   it('renders business info and address', async () => {
@@ -40,24 +38,16 @@ describe('BusinessForm', () => {
     expect(screen.getByTestId('mock-input')).toBeInTheDocument();
   });
 
-  it('renders DunsTable with matched business info', async () => {
+  it('renders DunsTable with matched business info as props', async () => {
     render(<BusinessForm />);
-    // Wait for useEffect to set results
     await waitFor(() => {
       expect(screen.getByTestId('mock-dunstable')).toBeInTheDocument();
     });
-    expect(screen.getByText('ABCDEF1234')).toBeInTheDocument();
-    expect(screen.getByText('ABCDEF1235')).toBeInTheDocument();
-  });
-
-  it('calls handleDunsSelect when a DUNS row is clicked', async () => {
-    render(<BusinessForm />);
-    await waitFor(() => {
-      expect(screen.getByText('ABCDEF1234')).toBeInTheDocument();
-    });
-    fireEvent.click(screen.getByText('ABCDEF1234'));
-    // The component logs to console, but we can't check state directly since selectedDuns is not rendered
-    // So just ensure no error and click works
+    // Check that the matchedBusinessInfoList is passed as data prop
+    const dunsTableProps = screen.getByTestId('mock-dunstable').textContent;
+    expect(dunsTableProps).toContain('ABCDEF1234');
+    expect(dunsTableProps).toContain('ABCDEF1235');
+    expect(dunsTableProps).toContain('onSelect');
   });
 
   it('renders empty input for business description', async () => {
@@ -65,6 +55,4 @@ describe('BusinessForm', () => {
     const input = screen.getByTestId('mock-input');
     expect(input).toHaveValue('');
     expect(input).toHaveAttribute('maxLength', '9');
-    expect(input).toHaveAttribute('placeholder', 'XXXXXXXXX');
-  });
-});
+    expect(input).toHaveAttribute('placeholder',
