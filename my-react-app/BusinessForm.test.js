@@ -7,7 +7,7 @@ jest.mock('@vds/inputs', () => ({
   Input: (props) => <input data-testid="mock-input" {...props} />,
 }));
 jest.mock('@vds/tooltips', () => ({
-  Tooltip: ( children ) => <span data-testid="mock-tooltip">{children}</span>,
+  Tooltip: ({ children }) => <span data-testid="mock-tooltip">{children}</span>,
 }));
 
 // Mock DunsTable as requested
@@ -39,4 +39,6 @@ describe('BusinessForm', () => {
 
   it('renders mock input', () => {
     render(<BusinessForm />);
-    expect(screen.getByTestId('mock
+    expect(screen.getByTestId('mock-input')).toBeInTheDocument();
+  });
+});
