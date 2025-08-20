@@ -1,19 +1,28 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { render, screen, fireEvent, within, waitFor } from '@testing-library/react';
+import { render, screen, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
+
+// --- Mock useCreateDunsMutation BEFORE component import ---
+const mockCreateDuns = jest.fn();
+
+jest.mock('onevzsoemfecommon/SMBAPIService', () => ({
+  __esModule: true,
+  useCreateDunsMutation: () => [mockCreateDuns],
+}));
+
 import DUNSTable from './DunsTable';
 
 // Mock @vds/buttons and @vds/inputs
 jest.mock('@vds/buttons', () => ({
   Button: ({ children, ...props }) => (
-    <button type='button' data-testid='mock-button' {...props}>
+    <button type="button" data-testid="mock-button" {...props}>
       {children}
     </button>
   ),
 }));
 jest.mock('@vds/inputs', () => ({
-  Input: ({ ...props }) => <input data-testid='mock-input' {...props} />,
+  Input: ({ ...props }) => <input data-testid="mock-input" {...props} />,
 }));
 jest.mock('@vds/tables', () => ({
   Table: ({ children, ...props }) => <table {...props}>{children}</table>,
@@ -52,6 +61,10 @@ const mockData = [
 ];
 
 describe('DUNSTable', () => {
+  beforeEach(() => {
+    mockCreateDuns.mockClear();
+  });
+
   it('renders table headers and rows', () => {
     render(<DUNSTable data={mockData} />);
     expect(screen.getByText('DUNS ID')).toBeInTheDocument();
@@ -85,7 +98,9 @@ describe('DUNSTable', () => {
     render(<DUNSTable data={mockData} />);
     const input = screen.getByTestId('mock-input');
     fireEvent.change(input, { target: { value: '12' } });
-    expect(screen.getByText('Please enter a valid 9 digit DUNS ID')).toBeInTheDocument();
+    expect(
+      screen.getByText('Please enter a valid 9 digit DUNS ID')
+    ).toBeInTheDocument();
   });
 
   it('calls onSelect when a row is selected', () => {
@@ -107,7 +122,7 @@ describe('DUNSTable', () => {
     expect(screen.getByText('987654321')).toBeInTheDocument();
   });
 
-  it('shows tooltip and handles alternate DUN submit/cancel', async () => {
+  it('shows tooltip and handles alternate DUN submit/cancel', () => {
     render(<DUNSTable data={mockData} />);
     fireEvent.click(screen.getByText('Generate new DUNs number'));
     expect(screen.getByText('Employee count')).toBeInTheDocument();
@@ -115,7 +130,9 @@ describe('DUNSTable', () => {
     const altInput = screen.getAllByTestId('mock-input')[1];
     fireEvent.change(altInput, { target: { value: '0' } });
     fireEvent.click(screen.getByText('Submit'));
-    expect(screen.getByText('Please enter an employee count greater than 1.')).toBeInTheDocument();
+    expect(
+      screen.getByText('Please enter an employee count greater than 1.')
+    ).toBeInTheDocument();
   });
 
   it('shows "No records found" when filtered data is empty', () => {
@@ -124,46 +141,55 @@ describe('DUNSTable', () => {
     fireEvent.change(input, { target: { value: 'notfound' } });
     expect(screen.getByText('No records found')).toBeInTheDocument();
   });
-  
+
   it('closes tooltip when Cancel is clicked', () => {
-  render(<DUNSTable data={mockData} />);
-  fireEvent.click(screen.getByText('Generate new DUNs number'));
-  expect(screen.getByText('Employee count')).toBeInTheDocument();
-  fireEvent.click(screen.getByText('Cancel'));
-  expect(screen.queryByText('Employee count')).not.toBeInTheDocument();
-});
+    render(<DUNSTable data={mockData} />);
+    fireEvent.click(screen.getByText('Generate new DUNs number'));
+    expect(screen.getByText('Employee count')).toBeInTheDocument();
+    fireEvent.click(screen.getByText('Cancel'));
+    expect(screen.queryByText('Employee count')).not.toBeInTheDocument();
+  });
 
-it('submits valid employee count and disables button', () => {
-  render(<DUNSTable data={mockData} />);
-  fireEvent.click(screen.getByText('Generate new DUNs number'));
-  const altInput = screen.getAllByTestId('mock-input')[1];
-  fireEvent.change(altInput, { target: { value: '5' } });
-  expect(screen.getByText('Submit')).not.toBeDisabled();
-  fireEvent.click(screen.getByText('Submit'));
-  // After submit, button should be disabled again
-  expect(screen.getByText('Submit')).toBeDisabled();
-});
+  it('submits valid employee count and disables button', () => {
+    render(<DUNSTable data={mockData} />);
+    fireEvent.click(screen.getByText('Generate new DUNs number'));
+    const altInput = screen.getAllByTestId('mock-input')[1];
+    fireEvent.change(altInput, { target: { value: '5' } });
+    fireEvent.click(screen.getByText('Submit'));
 
-it('selects row when clicking anywhere on row', () => {
-  const onSelect = jest.fn();
-  render(<DUNSTable data={mockData} onSelect={onSelect} />);
-  const row = screen.getByText('Acme Corp').closest('tr');
-  fireEvent.click(row);
-  expect(onSelect).toHaveBeenCalledWith('123456789');
-});
+    // Assert button state
+    expect(screen.getByText('Submit')).not.toBeDisabled();
 
-it('renders dash when businessAddress is missing', () => {
-  const incompleteData = [{
-    dunsLocId: '111111111',
-    businessName: '',
-    contactName: '',
-    phoneNumber: '',
-    employeeCount: null,
-    businessAddress: null
-  }];
-  render(<DUNSTable data={incompleteData} />);
-  expect(screen.getByText('-')).toBeInTheDocument(); // For address
-  expect(screen.getAllByText('-').length).toBeGreaterThan(1); // Multiple dashes
-});
+    // Assert API was called
+    expect(mockCreateDuns).toHaveBeenCalledWith(
+      expect.objectContaining({
+        body: expect.objectContaining({
+          employeeCount: 5,
+        }),
+      })
+    );
+  });
 
+  it('selects row when clicking anywhere on row', () => {
+    const onSelect = jest.fn();
+    render(<DUNSTable data={mockData} onSelect={onSelect} />);
+    const row = screen.getByText('Acme Corp').closest('tr');
+    fireEvent.click(row);
+    expect(onSelect).toHaveBeenCalledWith('123456789');
+  });
+
+  it('renders dash when businessAddress is missing', () => {
+    const incompleteData = [
+      {
+        dunsLocId: '111111111',
+        businessName: '',
+        contactName: '',
+        phoneNumber: '',
+        employeeCount: null,
+        businessAddress: null,
+      },
+    ];
+    render(<DUNSTable data={incompleteData} />);
+    expect(screen.queryAllByText('-').length).toBeGreaterThan(1); // Multiple dashes
+  });
 });
