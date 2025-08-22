@@ -29,8 +29,10 @@ jest.mock('./DunsTable', () => {
     return (
       <div data-testid="mock-dunstable">
         MockDunsTable - {props.data?.length || 0} rows
-        <button onClick={() => props.onSelect('123456789')}>Select DUNS</button>
-        <button onClick={() => props.setCreateDunsSuccess('success')}>
+        <button type="button" onClick={() => props.onSelect('123456789')}>
+          Select DUNS
+        </button>
+        <button type="button" onClick={() => props.setCreateDunsSuccess('success')}>
           Trigger Create
         </button>
       </div>
