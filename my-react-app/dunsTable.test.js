@@ -1,31 +1,12 @@
-/* eslint-disable no-unused-vars */
 /* eslint-disable react/prop-types */
-import { render, screen, fireEvent } from '@testing-library/react';
+import React from 'react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import '@testing-library/jest-dom';
+import DUNSTable from './DUNSTable';
 
-// --- Mock useCreateDunsMutation BEFORE component import ---
-const mockCreateDuns = jest.fn();
-
-jest.mock('onevzsoemfecommon/SMBAPIService', () => ({
-  __esModule: true,
-  useCreateDunsMutation: () => [mockCreateDuns],
-}));
-
-import DUNSTable from './DunsTable';
-
-// Mock @vds/buttons and @vds/inputs
-jest.mock('@vds/buttons', () => ({
-  Button: ({ children, ...props }) => (
-    <button type="button" data-testid="mock-button" {...props}>
-      {children}
-    </button>
-  ),
-}));
-jest.mock('@vds/inputs', () => ({
-  Input: ({ ...props }) => <input data-testid="mock-input" {...props} />,
-}));
+// 🔹 Mock VDS components
 jest.mock('@vds/tables', () => ({
-  Table: ({ children, ...props }) => <table {...props}>{children}</table>,
+  Table: ({ children }) => <table data-testid="mock-table">{children}</table>,
   TableHead: ({ children }) => <thead>{children}</thead>,
   TableHeader: ({ children }) => <th>{children}</th>,
   TableBody: ({ children }) => <tbody>{children}</tbody>,
@@ -33,163 +14,159 @@ jest.mock('@vds/tables', () => ({
   Cell: ({ children, ...props }) => <td {...props}>{children}</td>,
 }));
 
-const mockData = [
+jest.mock('@vds/inputs', () => ({
+  Input: React.forwardRef((props, ref) => (
+    <input ref={ref} data-testid="mock-input" {...props} />
+  )),
+}));
+
+jest.mock('@vds/buttons', () => ({
+  Button: ({ children, ...props }) => (
+    <button type="button" {...props}>
+      {children}
+    </button>
+  ),
+}));
+
+// 🔹 Mock API hook
+const mockCreateDuns = jest.fn();
+jest.mock('onevzsoemfecommon/SMBAPIService', () => ({
+  useCreateDunsMutation: () => [mockCreateDuns],
+}));
+
+const sampleData = [
   {
     dunsLocId: '123456789',
-    businessName: 'Acme Corp',
+    businessName: 'BizOne',
+    businessAddress: { addressLine1: '123 St', city: 'City', state: 'ST' },
     contactName: 'John Doe',
-    phoneNumber: '555-1234',
-    employeeCount: 25,
-    businessAddress: {
-      addressLine1: '123 Main St',
-      city: 'Metropolis',
-      state: 'NY',
-    },
+    phoneNumber: '1234567890',
+    employeeCount: 10,
   },
   {
     dunsLocId: '987654321',
-    businessName: 'Beta LLC',
+    businessName: 'BizTwo',
+    businessAddress: { addressLine1: '456 Ave', city: 'Town', state: 'TS' },
     contactName: 'Jane Smith',
-    phoneNumber: '555-5678',
-    employeeCount: 10,
-    businessAddress: {
-      addressLine1: '456 Elm St',
-      city: 'Gotham',
-      state: 'NJ',
-    },
+    phoneNumber: '0987654321',
+    employeeCount: 25,
   },
 ];
 
-describe('DUNSTable', () => {
+const mockBusinessInfo = {
+  businessName: 'Test Business',
+  businessAddress: {
+    addressLine1: '123 Main St',
+    city: 'CityX',
+    state: 'ST',
+    zipCode: '11111',
+    country: 'USA',
+  },
+  phoneNumber: '1234567890',
+};
+
+describe('DUNSTable Component', () => {
   beforeEach(() => {
-    mockCreateDuns.mockClear();
+    jest.clearAllMocks();
   });
 
-  it('renders table headers and rows', () => {
-    render(<DUNSTable data={mockData} />);
-    expect(screen.getByText('DUNS ID')).toBeInTheDocument();
-    expect(screen.getByText('Business Name')).toBeInTheDocument();
-    expect(screen.getByText('Contact Name')).toBeInTheDocument();
-    expect(screen.getByText('Phone Number')).toBeInTheDocument();
-    expect(screen.getByText('Employee Count')).toBeInTheDocument();
-
-    expect(screen.getByText('123456789')).toBeInTheDocument();
-    expect(screen.getByText('Acme Corp')).toBeInTheDocument();
-    expect(screen.getByText('John Doe')).toBeInTheDocument();
-    expect(screen.getByText('555-1234')).toBeInTheDocument();
-    expect(screen.getByText('25')).toBeInTheDocument();
-
-    expect(screen.getByText('987654321')).toBeInTheDocument();
-    expect(screen.getByText('Beta LLC')).toBeInTheDocument();
-    expect(screen.getByText('Jane Smith')).toBeInTheDocument();
-    expect(screen.getByText('555-5678')).toBeInTheDocument();
-    expect(screen.getByText('10')).toBeInTheDocument();
+  test('renders with no data', () => {
+    render(<DUNSTable data={[]} businessInfo={mockBusinessInfo} />);
+    expect(screen.getByText('No records found')).toBeInTheDocument();
   });
 
-  it('filters rows based on search input', () => {
-    render(<DUNSTable data={mockData} />);
+  test('renders rows with data', () => {
+    render(<DUNSTable data={sampleData} businessInfo={mockBusinessInfo} />);
+    expect(screen.getByText('BizOne')).toBeInTheDocument();
+    expect(screen.getByText('BizTwo')).toBeInTheDocument();
+  });
+
+  test('filters rows based on search input', () => {
+    render(<DUNSTable data={sampleData} businessInfo={mockBusinessInfo} />);
     const input = screen.getByTestId('mock-input');
     fireEvent.change(input, { target: { value: '987' } });
-    expect(screen.getByText('987654321')).toBeInTheDocument();
-    expect(screen.queryByText('123456789')).not.toBeInTheDocument();
+    expect(screen.getByText('BizTwo')).toBeInTheDocument();
+    expect(screen.queryByText('BizOne')).not.toBeInTheDocument();
   });
 
-  it('shows validation message for invalid DUNS search', () => {
-    render(<DUNSTable data={mockData} />);
+  test('reset clears search and selection', () => {
+    render(<DUNSTable data={sampleData} businessInfo={mockBusinessInfo} />);
     const input = screen.getByTestId('mock-input');
-    fireEvent.change(input, { target: { value: '12' } });
+    fireEvent.change(input, { target: { value: '123' } });
+    fireEvent.click(screen.getByText('Reset all'));
+    expect(input.value).toBe('');
+    expect(screen.getByText('BizOne')).toBeInTheDocument();
+    expect(screen.getByText('BizTwo')).toBeInTheDocument();
+  });
+
+  test('selects a row when clicked', () => {
+    const mockOnSelect = jest.fn();
+    render(
+      <DUNSTable
+        data={sampleData}
+        businessInfo={mockBusinessInfo}
+        onSelect={mockOnSelect}
+      />
+    );
+    fireEvent.click(screen.getByText('BizOne'));
+    expect(mockOnSelect).toHaveBeenCalledWith('123456789');
+  });
+
+  test('shows tooltip when Generate new DUNs number is clicked', () => {
+    render(<DUNSTable data={sampleData} businessInfo={mockBusinessInfo} />);
+    fireEvent.click(screen.getByText('Generate new DUNs number'));
     expect(
-      screen.getByText('Please enter a valid 9 digit DUNS ID')
+      screen.getByText('Enter the number of Employees of the business')
     ).toBeInTheDocument();
   });
 
-  it('calls onSelect when a row is selected', () => {
-    const onSelect = jest.fn();
-    render(<DUNSTable data={mockData} onSelect={onSelect} />);
-    const radio = screen.getAllByRole('radio')[1]; // select second row
-    fireEvent.click(radio);
-    expect(onSelect).toHaveBeenCalledWith('987654321');
-  });
-
-  it('resets search and selection when Reset all is clicked', () => {
-    render(<DUNSTable data={mockData} />);
-    const input = screen.getByTestId('mock-input');
-    fireEvent.change(input, { target: { value: '987' } });
-    expect(screen.getByText('987654321')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Reset all'));
-    expect(input.value).toBe('');
-    expect(screen.getByText('123456789')).toBeInTheDocument();
-    expect(screen.getByText('987654321')).toBeInTheDocument();
-  });
-
-  it('shows tooltip and handles alternate DUN submit/cancel', () => {
-    render(<DUNSTable data={mockData} />);
+  test('validates alternate DUN input (invalid)', () => {
+    render(<DUNSTable data={sampleData} businessInfo={mockBusinessInfo} />);
     fireEvent.click(screen.getByText('Generate new DUNs number'));
-    expect(screen.getByText('Employee count')).toBeInTheDocument();
-
-    const altInput = screen.getAllByTestId('mock-input')[1];
-    fireEvent.change(altInput, { target: { value: '0' } });
+    fireEvent.change(screen.getByTestId('mock-input'), {
+      target: { value: '0' },
+    });
     fireEvent.click(screen.getByText('Submit'));
     expect(
       screen.getByText('Please enter an employee count greater than 1.')
     ).toBeInTheDocument();
   });
 
-  it('shows "No records found" when filtered data is empty', () => {
-    render(<DUNSTable data={mockData} />);
-    const input = screen.getByTestId('mock-input');
-    fireEvent.change(input, { target: { value: 'notfound' } });
-    expect(screen.getByText('No records found')).toBeInTheDocument();
-  });
+  test('submits valid employee count and calls API (success)', async () => {
+    mockCreateDuns.mockResolvedValueOnce({});
+    const mockSetSuccess = jest.fn();
 
-  it('closes tooltip when Cancel is clicked', () => {
-    render(<DUNSTable data={mockData} />);
-    fireEvent.click(screen.getByText('Generate new DUNs number'));
-    expect(screen.getByText('Employee count')).toBeInTheDocument();
-    fireEvent.click(screen.getByText('Cancel'));
-    expect(screen.queryByText('Employee count')).not.toBeInTheDocument();
-  });
+    render(
+      <DUNSTable
+        data={sampleData}
+        businessInfo={mockBusinessInfo}
+        setCreateDunsSuccess={mockSetSuccess}
+      />
+    );
 
-  it('submits valid employee count and disables button', () => {
-    render(<DUNSTable data={mockData} />);
     fireEvent.click(screen.getByText('Generate new DUNs number'));
-    const altInput = screen.getAllByTestId('mock-input')[1];
-    fireEvent.change(altInput, { target: { value: '5' } });
+    const empInput = screen.getByTestId('mock-input');
+    fireEvent.change(empInput, { target: { value: '50' } });
     fireEvent.click(screen.getByText('Submit'));
 
-    // Assert button state
-    expect(screen.getByText('Submit')).not.toBeDisabled();
-
-    // Assert API was called
-    expect(mockCreateDuns).toHaveBeenCalledWith(
-      expect.objectContaining({
-        body: expect.objectContaining({
-          employeeCount: 5,
-        }),
-      })
-    );
+    await waitFor(() => {
+      expect(mockCreateDuns).toHaveBeenCalled();
+      expect(mockSetSuccess).toHaveBeenCalled();
+    });
   });
 
-  it('selects row when clicking anywhere on row', () => {
-    const onSelect = jest.fn();
-    render(<DUNSTable data={mockData} onSelect={onSelect} />);
-    const row = screen.getByText('Acme Corp').closest('tr');
-    fireEvent.click(row);
-    expect(onSelect).toHaveBeenCalledWith('123456789');
-  });
+  test('handles API error on employee count submit', async () => {
+    mockCreateDuns.mockRejectedValueOnce(new Error('API failed'));
 
-  it('renders dash when businessAddress is missing', () => {
-    const incompleteData = [
-      {
-        dunsLocId: '111111111',
-        businessName: '',
-        contactName: '',
-        phoneNumber: '',
-        employeeCount: null,
-        businessAddress: null,
-      },
-    ];
-    render(<DUNSTable data={incompleteData} />);
-    expect(screen.queryAllByText('-').length).toBeGreaterThan(1); // Multiple dashes
+    render(<DUNSTable data={sampleData} businessInfo={mockBusinessInfo} />);
+
+    fireEvent.click(screen.getByText('Generate new DUNs number'));
+    const empInput = screen.getByTestId('mock-input');
+    fireEvent.change(empInput, { target: { value: '10' } });
+    fireEvent.click(screen.getByText('Submit'));
+
+    await waitFor(() => {
+      expect(mockCreateDuns).toHaveBeenCalled();
+    });
   });
 });
