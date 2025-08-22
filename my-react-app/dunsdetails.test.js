@@ -1,36 +1,51 @@
+/* eslint-disable react/prop-types */
 import React from 'react';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
 import '@testing-library/jest-dom';
 import DunsDetails from './DunsDetails';
 
 // 🔹 Mock external components
-jest.mock('@vds/inputs', () => ({
-  Input: (props) => <input data-testid="mock-input" {...props} />
-}));
+jest.mock('@vds/inputs', () => {
+  function MockInput(props) {
+    return <input data-testid="mock-input" {...props} />;
+  }
+  return { Input: MockInput };
+});
 
-jest.mock('@vds/tooltips', () => ({
-  Tooltip: ({ title, children }) => (
-    <div data-testid="mock-tooltip">
-      {children}
-      <span>{title}</span>
-    </div>
-  )
-}));
+jest.mock('@vds/tooltips', () => {
+  function MockTooltip({ title, children }) {
+    return (
+      <div data-testid="mock-tooltip">
+        {children}
+        <span>{title}</span>
+      </div>
+    );
+  }
+  return { Tooltip: MockTooltip };
+});
 
-jest.mock('./DunsTable', () => (props) => (
-  <div data-testid="mock-dunstable">
-    MockDunsTable - {props.data?.length || 0} rows
-    <button onClick={() => props.onSelect('123456789')}>Select DUNS</button>
-    <button onClick={() => props.setCreateDunsSuccess('success')}>Trigger Create</button>
-  </div>
-));
+jest.mock('./DunsTable', () => {
+  function MockDunsTable(props) {
+    return (
+      <div data-testid="mock-dunstable">
+        MockDunsTable - {props.data?.length || 0} rows
+        <button onClick={() => props.onSelect('123456789')}>Select DUNS</button>
+        <button onClick={() => props.setCreateDunsSuccess('success')}>
+          Trigger Create
+        </button>
+      </div>
+    );
+  }
+  return MockDunsTable;
+});
 
 // 🔹 Mock API hook
 const mockRetrieveDuns = jest.fn();
 jest.mock('onevzsoemfecommon/SMBAPIService', () => ({
-  useRetrieveDunsMutation: () => [mockRetrieveDuns]
+  useRetrieveDunsMutation: () => [mockRetrieveDuns],
 }));
 
+// Sample props
 const mockBusinessInfo = {
   businessName: 'Test Business',
   businessAddress: {
@@ -39,10 +54,10 @@ const mockBusinessInfo = {
     city: 'TestCity',
     state: 'TS',
     zipCode: '12345',
-    country: 'TestCountry'
+    country: 'TestCountry',
   },
   businessEmail: 'test@test.com',
-  phoneNumber: '1234567890'
+  phoneNumber: '1234567890',
 };
 
 describe('DunsDetails Component', () => {
@@ -66,7 +81,7 @@ describe('DunsDetails Component', () => {
 
   test('calls retrieveDuns API and renders results', async () => {
     mockRetrieveDuns.mockResolvedValueOnce({
-      data: { matchedBusinessInfoList: [{ dunsId: '111', name: 'BizOne' }] }
+      data: { matchedBusinessInfoList: [{ dunsId: '111', name: 'BizOne' }] },
     });
 
     render(<DunsDetails businessInfo={mockBusinessInfo} />);
@@ -89,7 +104,7 @@ describe('DunsDetails Component', () => {
 
   test('handles DUNS selection', async () => {
     mockRetrieveDuns.mockResolvedValueOnce({
-      data: { matchedBusinessInfoList: [{ dunsId: '111' }] }
+      data: { matchedBusinessInfoList: [{ dunsId: '111' }] },
     });
 
     render(<DunsDetails businessInfo={mockBusinessInfo} />);
@@ -103,7 +118,7 @@ describe('DunsDetails Component', () => {
 
   test('re-fetches data when createDunsSuccess is set', async () => {
     mockRetrieveDuns.mockResolvedValue({
-      data: { matchedBusinessInfoList: [{ dunsId: '222' }] }
+      data: { matchedBusinessInfoList: [{ dunsId: '222' }] },
     });
 
     render(<DunsDetails businessInfo={mockBusinessInfo} />);
