@@ -336,3 +336,10 @@ describe('SMBProspectLanding', () => {
       .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // submitForm
       .mockImplementationOnce(() => [null, jest.fn()]) // smbCaseId
       .mockImplementationOnce(() => [{}, jest.fn()]); // businessInfo
+
+    render(<SMBProspectLanding />);
+    expect(screen.getByTestId('checkPortability-btn')).toBeInTheDocument();
+    expect(screen.getByText('Check portability')).toBeInTheDocument();
+    useStateSpy.mockRestore();
+  });
+});
