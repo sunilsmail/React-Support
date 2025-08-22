@@ -84,6 +84,14 @@ jest.mock('../../components/CreditResults/CreditResultPage', () => {
   return CreditResultPage;
 });
 
+jest.mock('../../components/SMBProspectLanding/CoSign/CoSignInfo', () => {
+  function CoSignInfo() {
+    return <div data-testid='CoSignInfo' />
+  }
+  CoSignInfo.displayName = 'CoSignInfo';
+  return CoSignInfo;
+});
+
 jest.mock('@vds/lines', () => ({
   Line: function Line() {
     return <div data-testid='Line' />;
@@ -162,7 +170,6 @@ describe('SMBProspectLanding', () => {
   });
 
   it('renders main sections and child components', () => {
-    // Patch useState to set updateStepperStatus.parent = 'Customer Information'
     const useStateSpy = jest.spyOn(React, 'useState');
     useStateSpy
       .mockImplementationOnce(() => ['smb-prospect', jest.fn()]) // currentFlow
@@ -205,14 +212,10 @@ describe('SMBProspectLanding', () => {
   });
 
   it('calls validateSalesRepId when triggerSalesId.changed is true', async () => {
-    // Simulate triggerSalesId.changed = true by updating the hook return value
     const validateSalesRepIdResults = {};
     useLazyValidateSalesRepIdQuery.mockReturnValue([validateSalesRepIdMock, validateSalesRepIdResults]);
-    // Re-render with a custom component to trigger useEffect
     const { rerender } = render(<SMBProspectLanding />);
-    // Simulate triggerSalesId changed
     rerender(<SMBProspectLanding />);
-    // The validateSalesRepId should be called at least once
     await waitFor(() => {
       expect(validateSalesRepIdMock).toHaveBeenCalled();
     });
@@ -277,7 +280,6 @@ describe('SMBProspectLanding', () => {
   });
 
   it('dispatches error message if validateSalesRepIdResults is fulfilled but no givenName', async () => {
-    // Simulate validateSalesRepIdResults with error
     const errorMsg = 'Invalid Sales Rep';
     useLazyValidateSalesRepIdQuery.mockReturnValue([
       jest.fn(),
@@ -310,7 +312,6 @@ describe('SMBProspectLanding', () => {
       },
     ]);
     render(<SMBProspectLanding />);
-    // No error dispatch expected
     await waitFor(() => {
       expect(appMessageActions.addAppMessage).not.toHaveBeenCalled();
     });
@@ -323,7 +324,6 @@ describe('SMBProspectLanding', () => {
   });
 
   it('renders Check Portability button', () => {
-    // Patch useState to set updateStepperStatus.parent = 'Customer Information'
     const useStateSpy = jest.spyOn(React, 'useState');
     useStateSpy
       .mockImplementationOnce(() => ['smb-prospect', jest.fn()]) // currentFlow
