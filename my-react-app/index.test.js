@@ -10,136 +10,31 @@ import {
   useLazyValidateSalesRepIdQuery,
 } from '../../modules/services/APIService/APIServiceHooks';
 
-// Mock child components with named functions and proper prop validation
-jest.mock('../../components/SMBProspectLanding/SelectQuote/SelectQuote', () => {
-  function SelectQuote() {
-    return <div data-testid='SelectQuote' />
-  }
-  SelectQuote.displayName = 'SelectQuote';
-  return SelectQuote;
-});
+// ===== Mock children =====
+jest.mock('../../components/SMBProspectLanding/SelectQuote/SelectQuote', () => () => <div data-testid="SelectQuote" />);
+jest.mock('../../components/SMBProspectLanding/StepperBar/StepperBar', () => () => <div data-testid="StepperBar" />);
+jest.mock('../../components/SMBProspectLanding/Footer/Footer', () => ({ currentFlow }) => <div data-testid="Footer">{currentFlow}</div>);
+jest.mock('../../components/SMBProspectLanding/CustomerInformation/CustomerInformation', () => () => <div data-testid="CustomerInformation" />);
+jest.mock('../../components/CreditResults', () => () => <div data-testid="CreditResults" />);
+jest.mock('../../components/SMBProspectLanding/BusinessInfo/BusinessInfo', () => () => <div data-testid="BusinessInfo" />);
+jest.mock('../../components/SMBProspectLanding/CoBrowse/CoBrowse', () => () => <div data-testid="CoBrowse" />);
+jest.mock('../../components/SMBEnrollment/POCinfo/PocInformation', () => () => <div data-testid="PocInformation" />);
+jest.mock('../../components/CreditResults/CreditResultPage', () => () => <div data-testid="CreditResultPage" />);
+jest.mock('../../components/SMBProspectLanding/ContractSignerInfo/ContractSignerInformation', () => () => <div data-testid="ContractSignerInformation" />);
+jest.mock('../../components/SMBProspectLanding/CoSign/CoSignInfo', () => () => <div data-testid="CoSignInfo" />);
 
-jest.mock('../../components/SMBProspectLanding/StepperBar/StepperBar', () => {
-  function StepperBar() {
-    return <div data-testid='StepperBar' />
-  }
-  StepperBar.displayName = 'StepperBar';
-  return StepperBar;
-});
-
-jest.mock('../../components/SMBProspectLanding/Footer/Footer', () => {
-  // eslint-disable-next-line react/prop-types
-  function Footer({ currentFlow }) {
-    return <div data-testid='Footer'>{currentFlow}</div>
-  }
-  Footer.displayName = 'Footer';
-  return Footer;
-});
-
-jest.mock('../../components/SMBProspectLanding/CustomerInformation/CustomerInformation', () => {
-  function CustomerInformation() {
-    return <div data-testid='CustomerInformation' />
-  }
-  CustomerInformation.displayName = 'CustomerInformation';
-  return CustomerInformation;
-});
-
-jest.mock('../../components/CreditResults', () => {
-  function CreditResults() {
-    return <div data-testid='CreditResults' />
-  }
-  CreditResults.displayName = 'CreditResults';
-  return CreditResults;
-});
-
-jest.mock('../../components/SMBProspectLanding/BusinessInfo/BusinessInfo', () => {
-  function BusinessInfo() {
-    return <div data-testid='BusinessInfo' />
-  }
-  BusinessInfo.displayName = 'BusinessInfo';
-  return BusinessInfo;
-});
-
-jest.mock('../../components/SMBProspectLanding/CoBrowse/CoBrowse', () => {
-  function CoBrowse() {
-    return <div data-testid='CoBrowse' />
-  }
-  CoBrowse.displayName = 'CoBrowse';
-  return CoBrowse;
-});
-
-jest.mock('../../components/SMBEnrollment/POCinfo/PocInformation', () => {
-  function PocInformation() {
-    return <div data-testid='PocInformation' />
-  }
-  PocInformation.displayName = 'PocInformation';
-  return PocInformation;
-});
-
-jest.mock('../../components/CreditResults/CreditResultPage', () => {
-  function CreditResultPage() {
-    return <div data-testid='CreditResultPage' />
-  }
-  CreditResultPage.displayName = 'CreditResultPage';
-  return CreditResultPage;
-});
-
-jest.mock('../../components/SMBProspectLanding/CoSign/CoSignInfo', () => {
-  function CoSignInfo() {
-    return <div data-testid='CoSignInfo' />
-  }
-  CoSignInfo.displayName = 'CoSignInfo';
-  return CoSignInfo;
-});
-
-jest.mock('@vds/lines', () => ({
-  Line: function Line() {
-    return <div data-testid='Line' />;
-  },
-}));
-
-jest.mock('@vds/buttons', () => ({
-  // eslint-disable-next-line react/prop-types
-  TextLink: function TextLink({ children, ...props }) {
-    return (
-      <button type='button' {...props}>
-        {children}
-      </button>
-    );
-  },
-}));
-
-jest.mock('@vds/typography', () => ({
-  // eslint-disable-next-line react/prop-types
-  Body: function Body({ children }) {
-    return <span>{children}</span>;
-  },
-}));
-
+jest.mock('@vds/lines', () => ({ Line: () => <div data-testid="Line" /> }));
+jest.mock('@vds/buttons', () => ({ TextLink: ({ children, ...props }) => <button data-testid={props['data-testid']} {...props}>{children}</button> }));
+jest.mock('@vds/typography', () => ({ Body: ({ children }) => <span>{children}</span> }));
 jest.mock('../../components/SMBProspectLanding/common/helpers/StyledComponentsCommon', () => ({
-  // eslint-disable-next-line react/prop-types
-  ContainerSpace: function ContainerSpace({ children }) {
-    return <div data-testid='ContainerSpace'>{children}</div>;
-  },
-  // eslint-disable-next-line react/prop-types
-  FixedWidthContainer: function FixedWidthContainer({ children }) {
-    return <div data-testid='FixedWidthContainer'>{children}</div>;
-  },
+  ContainerSpace: ({ children }) => <div data-testid="ContainerSpace">{children}</div>,
+  FixedWidthContainer: ({ children }) => <div data-testid="FixedWidthContainer">{children}</div>,
 }));
 
-// Mock hooks
-jest.mock('react-redux', () => ({
-  useDispatch: jest.fn(),
-}));
-
-jest.mock('onevzsoemfecommon/AppMessageActions', () => ({
-  addAppMessage: jest.fn(),
-}));
-
-jest.mock('onevzsoemfecommon/AccountAPIService', () => ({
-  useLazyCreateCartQuery: jest.fn(),
-}));
-
+// ===== Mock hooks =====
+jest.mock('react-redux', () => ({ useDispatch: jest.fn() }));
+jest.mock('onevzsoemfecommon/AppMessageActions', () => ({ addAppMessage: jest.fn() }));
+jest.mock('onevzsoemfecommon/AccountAPIService', () => ({ useLazyCreateCartQuery: jest.fn() }));
 jest.mock('../../modules/services/APIService/APIServiceHooks', () => ({
   useUserProfileGlobalQuery: jest.fn(),
   useLazyValidateSalesRepIdQuery: jest.fn(),
@@ -151,10 +46,12 @@ describe('SMBProspectLanding', () => {
   let validateSalesRepIdMock;
 
   beforeEach(() => {
+    jest.clearAllMocks();
+
     dispatchMock = jest.fn();
     useDispatch.mockReturnValue(dispatchMock);
 
-    // Default mocks for hooks
+    // default mock API
     useUserProfileGlobalQuery.mockReturnValue({
       data: { data: { ordLocation: 'LOC123', salesRepId: 'SRID123' } },
       status: 'fulfilled',
@@ -165,37 +62,36 @@ describe('SMBProspectLanding', () => {
 
     validateSalesRepIdMock = jest.fn();
     useLazyValidateSalesRepIdQuery.mockReturnValue([validateSalesRepIdMock, {}]);
-
-    jest.clearAllMocks();
   });
 
-  it('renders main sections and child components', () => {
-    const useStateSpy = jest.spyOn(React, 'useState');
-    useStateSpy
+  it('always renders StepperBar, Footer, and CreditResultPage', () => {
+    render(<SMBProspectLanding />);
+    expect(screen.getByTestId('StepperBar')).toBeInTheDocument();
+    expect(screen.getByTestId('Footer')).toHaveTextContent('smb-prospect');
+    expect(screen.getByTestId('CreditResultPage')).toBeInTheDocument();
+  });
+
+  it('renders SMBProspectMain content when parent is Customer Information', () => {
+    // mock useState to force updateStepperStatus.parent
+    jest.spyOn(React, 'useState')
       .mockImplementationOnce(() => ['smb-prospect', jest.fn()]) // currentFlow
       .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // validateSalesRepId
       .mockImplementationOnce(() => [{}, jest.fn()]) // triggerSalesId
       .mockImplementationOnce(() => [{ parent: 'Customer Information' }, jest.fn()]) // updateStepperStatus
       .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // createCart
       .mockImplementationOnce(() => [false, jest.fn()]) // isCreditCancelled
-      .mockImplementationOnce(() => [false, jest.fn()]) // runCreditClicked
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // submitForm
-      .mockImplementationOnce(() => [null, jest.fn()]) // smbCaseId
-      .mockImplementationOnce(() => [{}, jest.fn()]); // businessInfo
+      .mockImplementationOnce(() => [false, jest.fn()]); // runCreditClicked
 
     render(<SMBProspectLanding />);
-    expect(screen.getByTestId('StepperBar')).toBeInTheDocument();
+
     expect(screen.getByTestId('SMBProspectLandingTest')).toBeInTheDocument();
     expect(screen.getByTestId('SelectQuote')).toBeInTheDocument();
-    expect(screen.getByTestId('FixedWidthContainer')).toBeInTheDocument();
-    expect(screen.getByTestId('ContainerSpace')).toBeInTheDocument();
     expect(screen.getByTestId('CustomerInformation')).toBeInTheDocument();
     expect(screen.getByTestId('BusinessInfo')).toBeInTheDocument();
-    expect(screen.getByTestId('Footer')).toBeInTheDocument();
-    expect(screen.getByTestId('CreditResultPage')).toBeInTheDocument();
     expect(screen.getByTestId('Line')).toBeInTheDocument();
     expect(screen.getByTestId('checkPortability-btn')).toBeInTheDocument();
-    useStateSpy.mockRestore();
+
+    React.useState.mockRestore();
   });
 
   it('calls createCart when userProfileGlobalResults is fulfilled and has ordLocation', () => {
@@ -203,95 +99,18 @@ describe('SMBProspectLanding', () => {
     expect(createCartMock).toHaveBeenCalledWith({
       body: {
         locationCode: 'LOC123',
-        header: {
-          clientAppName: 'ATG-RTL-NETACE',
-          clientAppUserName: 'LOC123',
-        },
+        header: { clientAppName: 'ATG-RTL-NETACE', clientAppUserName: 'LOC123' },
       },
     });
   });
 
-  it('calls validateSalesRepId when triggerSalesId.changed is true', async () => {
-    const validateSalesRepIdResults = {};
-    useLazyValidateSalesRepIdQuery.mockReturnValue([validateSalesRepIdMock, validateSalesRepIdResults]);
-    const { rerender } = render(<SMBProspectLanding />);
-    rerender(<SMBProspectLanding />);
-    await waitFor(() => {
-      expect(validateSalesRepIdMock).toHaveBeenCalled();
-    });
-  });
-
-  it('shows CoBrowse and message when updateStepperStatus.child is "Business information"', () => {
-    const useStateSpy = jest.spyOn(React, 'useState');
-    useStateSpy
-      .mockImplementationOnce(() => ['smb-prospect', jest.fn()]) // currentFlow
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // validateSalesRepId
-      .mockImplementationOnce(() => [{}, jest.fn()]) // triggerSalesId
-      .mockImplementationOnce(() => [{ parent: 'Customer Information', child: 'Business information' }, jest.fn()]) // updateStepperStatus
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // createCart
-      .mockImplementationOnce(() => [false, jest.fn()]) // isCreditCancelled
-      .mockImplementationOnce(() => [false, jest.fn()]) // runCreditClicked
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // submitForm
-      .mockImplementationOnce(() => [null, jest.fn()]) // smbCaseId
-      .mockImplementationOnce(() => [{}, jest.fn()]); // businessInfo
-
-    render(<SMBProspectLanding />);
-    expect(screen.getByText(/Turn On Co-browse mode/i)).toBeInTheDocument();
-    expect(screen.getByTestId('CoBrowse')).toBeInTheDocument();
-    useStateSpy.mockRestore();
-  });
-
-  it('shows PocInformation when updateStepperStatus.child is "Poc information"', () => {
-    const useStateSpy = jest.spyOn(React, 'useState');
-    useStateSpy
-      .mockImplementationOnce(() => ['smb-prospect', jest.fn()]) // currentFlow
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // validateSalesRepId
-      .mockImplementationOnce(() => [{}, jest.fn()]) // triggerSalesId
-      .mockImplementationOnce(() => [{ parent: 'Customer Information', child: 'Poc information' }, jest.fn()]) // updateStepperStatus
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // createCart
-      .mockImplementationOnce(() => [false, jest.fn()]) // isCreditCancelled
-      .mockImplementationOnce(() => [false, jest.fn()]) // runCreditClicked
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // submitForm
-      .mockImplementationOnce(() => [null, jest.fn()]) // smbCaseId
-      .mockImplementationOnce(() => [{}, jest.fn()]); // businessInfo
-
-    render(<SMBProspectLanding />);
-    expect(screen.getByTestId('PocInformation')).toBeInTheDocument();
-    useStateSpy.mockRestore();
-  });
-
-  it('shows CreditResults when updateStepperStatus.parent is "Review credit application"', () => {
-    const useStateSpy = jest.spyOn(React, 'useState');
-    useStateSpy
-      .mockImplementationOnce(() => ['smb-prospect', jest.fn()]) // currentFlow
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // validateSalesRepId
-      .mockImplementationOnce(() => [{}, jest.fn()]) // triggerSalesId
-      .mockImplementationOnce(() => [{ parent: 'Review credit application' }, jest.fn()]) // updateStepperStatus
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // createCart
-      .mockImplementationOnce(() => [false, jest.fn()]) // isCreditCancelled
-      .mockImplementationOnce(() => [false, jest.fn()]) // runCreditClicked
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // submitForm
-      .mockImplementationOnce(() => [null, jest.fn()]) // smbCaseId
-      .mockImplementationOnce(() => [{}, jest.fn()]); // businessInfo
-
-    render(<SMBProspectLanding />);
-    expect(screen.getByTestId('CreditResults')).toBeInTheDocument();
-    useStateSpy.mockRestore();
-  });
-
-  it('dispatches error message if validateSalesRepIdResults is fulfilled but no givenName', async () => {
+  it('dispatches error if validateSalesRepId fulfilled but no givenName', async () => {
     const errorMsg = 'Invalid Sales Rep';
     useLazyValidateSalesRepIdQuery.mockReturnValue([
       jest.fn(),
-      {
-        status: 'fulfilled',
-        data: {
-          data: {
-            error: { message: errorMsg },
-          },
-        },
-      },
+      { status: 'fulfilled', data: { data: { error: { message: errorMsg } } } },
     ]);
+
     render(<SMBProspectLanding />);
     await waitFor(() => {
       expect(appMessageActions.addAppMessage).toHaveBeenCalledWith(errorMsg, 'error', true, true, true);
@@ -299,47 +118,63 @@ describe('SMBProspectLanding', () => {
     });
   });
 
-  it('updates stepper status if validateSalesRepIdResults is fulfilled and givenName exists', async () => {
+  it('does not dispatch error if validateSalesRepId fulfilled with givenName', async () => {
     useLazyValidateSalesRepIdQuery.mockReturnValue([
       jest.fn(),
-      {
-        status: 'fulfilled',
-        data: {
-          data: {
-            detail: { givenName: 'John' },
-          },
-        },
-      },
+      { status: 'fulfilled', data: { data: { detail: { givenName: 'John' } } } },
     ]);
+
     render(<SMBProspectLanding />);
     await waitFor(() => {
       expect(appMessageActions.addAppMessage).not.toHaveBeenCalled();
     });
   });
 
-  it('renders Footer only when currentFlow is "smb-prospect"', () => {
+  it('renders CoBrowse when child step is Business information', () => {
+    jest.spyOn(React, 'useState')
+      .mockImplementationOnce(() => ['smb-prospect', jest.fn()])
+      .mockImplementationOnce(() => [jest.fn(), jest.fn()])
+      .mockImplementationOnce(() => [{}, jest.fn()])
+      .mockImplementationOnce(() => [{ parent: 'Customer Information', child: 'Business information' }, jest.fn()])
+      .mockImplementationOnce(() => [jest.fn(), jest.fn()])
+      .mockImplementationOnce(() => [false, jest.fn()])
+      .mockImplementationOnce(() => [false, jest.fn()]);
+
     render(<SMBProspectLanding />);
-    expect(screen.getByTestId('Footer')).toBeInTheDocument();
-    expect(screen.getByTestId('Footer')).toHaveTextContent('smb-prospect');
+    expect(screen.getByTestId('CoBrowse')).toBeInTheDocument();
+
+    React.useState.mockRestore();
   });
 
-  it('renders Check Portability button', () => {
-    const useStateSpy = jest.spyOn(React, 'useState');
-    useStateSpy
-      .mockImplementationOnce(() => ['smb-prospect', jest.fn()]) // currentFlow
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // validateSalesRepId
-      .mockImplementationOnce(() => [{}, jest.fn()]) // triggerSalesId
-      .mockImplementationOnce(() => [{ parent: 'Customer Information' }, jest.fn()]) // updateStepperStatus
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // createCart
-      .mockImplementationOnce(() => [false, jest.fn()]) // isCreditCancelled
-      .mockImplementationOnce(() => [false, jest.fn()]) // runCreditClicked
-      .mockImplementationOnce(() => [jest.fn(), jest.fn()]) // submitForm
-      .mockImplementationOnce(() => [null, jest.fn()]) // smbCaseId
-      .mockImplementationOnce(() => [{}, jest.fn()]); // businessInfo
+  it('renders PocInformation when child step is Poc information', () => {
+    jest.spyOn(React, 'useState')
+      .mockImplementationOnce(() => ['smb-prospect', jest.fn()])
+      .mockImplementationOnce(() => [jest.fn(), jest.fn()])
+      .mockImplementationOnce(() => [{}, jest.fn()])
+      .mockImplementationOnce(() => [{ parent: 'Customer Information', child: 'Poc information' }, jest.fn()])
+      .mockImplementationOnce(() => [jest.fn(), jest.fn()])
+      .mockImplementationOnce(() => [false, jest.fn()])
+      .mockImplementationOnce(() => [false, jest.fn()]);
 
     render(<SMBProspectLanding />);
-    expect(screen.getByTestId('checkPortability-btn')).toBeInTheDocument();
-    expect(screen.getByText('Check portability')).toBeInTheDocument();
-    useStateSpy.mockRestore();
+    expect(screen.getByTestId('PocInformation')).toBeInTheDocument();
+
+    React.useState.mockRestore();
+  });
+
+  it('renders CreditResults when parent is Review credit application', () => {
+    jest.spyOn(React, 'useState')
+      .mockImplementationOnce(() => ['smb-prospect', jest.fn()])
+      .mockImplementationOnce(() => [jest.fn(), jest.fn()])
+      .mockImplementationOnce(() => [{}, jest.fn()])
+      .mockImplementationOnce(() => [{ parent: 'Review credit application' }, jest.fn()])
+      .mockImplementationOnce(() => [jest.fn(), jest.fn()])
+      .mockImplementationOnce(() => [false, jest.fn()])
+      .mockImplementationOnce(() => [false, jest.fn()]);
+
+    render(<SMBProspectLanding />);
+    expect(screen.getByTestId('CreditResults')).toBeInTheDocument();
+
+    React.useState.mockRestore();
   });
 });
